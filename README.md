@@ -127,9 +127,10 @@ npm run test:unit -- --run
 
 Vitest covers the sign-in form, the new-operation form, the records table,
 `MaterialDataTable` (no HTML injection, accessible actions button), the
-`401`/logout flow, `getUserDataStorage`, the router auth guard (session
-probe, redirects and hydration) and the `validate-api-url` build guard.
-35 tests across 9 files.
+`401`/logout flow (including the `/auth/me` probe exemption from the hard
+reload), `getUserDataStorage`, the router auth guard (session probe,
+redirects and hydration) and the `validate-api-url` build guard.
+37 tests across 9 files.
 
 ## Remaining work / not fixed here
 
