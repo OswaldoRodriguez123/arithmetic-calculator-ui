@@ -1,6 +1,5 @@
 import ApiService from "../core/api";
-import { useAppStore } from "@/stores";
-import { saveUserDataStorage } from "../core/local-storage/local-storage.service";
+import { performLogout } from "./logout";
 
 export class AuthService {
   constructor() {
@@ -14,14 +13,7 @@ export class AuthService {
   }
 
   async logout() {
-    const store = useAppStore();
-
-    store.state = {
-      user: null,
-      isAuthenticated: false,
-    }
-
-    saveUserDataStorage(null);
+    performLogout();
   }
 }
 
