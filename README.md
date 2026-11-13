@@ -81,7 +81,7 @@ What the hardening pass (run-1 security audit) fixed:
   display profile (`id`, `name`, `username`) for instant paint. No script
   can read the session cookie, so the XSS-exfiltration path is closed.
   Deploy requirement: the API must run `NODE_ENV=production` with
-  `CORS_ORIGIN=https://oswaldorodriguez123.github.io` (the API refuses to
+  `CORS_ORIGIN=https://arithmetic-calculator-ui.onrender.com` (the API refuses to
   boot in production without it) and serve the UI over HTTPS.
 - **`401` anywhere** clears the stored profile and store state and reloads
   to `/sign-in`. The API's `401` is the actual enforcement point.
@@ -141,7 +141,8 @@ redirects and hydration) and the `validate-api-url` build guard.
   together: older APIs without `/auth/me` cannot serve the router guard,
   and this UI does not send `Authorization` headers.
 - **`frame-ancestors`, HSTS, `Referrer-Policy`** must be sent as HTTP headers
-  by the static host (GitHub Pages / fork's host); the CSP `<meta>` tag cannot
+  by the static host (Render Static Sites in this deployment; any static host
+  works); the CSP `<meta>` tag cannot
   express `frame-ancestors`.
 - **Font Awesome webfont licenses**: FA Free is CC BY 4.0 / SIL OFL — the
   bundled CSS retains attribution. No trademark claim either way.
