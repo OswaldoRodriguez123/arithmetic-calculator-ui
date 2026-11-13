@@ -6,18 +6,22 @@ const versionApi = 'v1';
 
 /**
  * Axios response error handler. On 401 the session is dead: clear it and
- * force a full-page reload — EXCEPT the router guard's /auth/me probe,
- * whose 401 means "no session" and is handled by the guard redirecting to
- * sign-in (reloading there would loop forever).
+ * force a full-page reload — EXCEPT the session-flow endpoints
+ * (/auth/login, /auth/me, /auth/logout), where a 401 is an expected,
+ * locally-handled outcome: the login form shows the error inline, and the
+ * router guard redirects to sign-in. Reloading there would wipe the
+ * message and loop forever (probe).
  * The error is always re-thrown so callers never resolve `undefined`.
  */
 export function handleApiError(error) {
   const url = String(error?.config?.url ?? '');
-  const isSessionProbe = url.includes('/auth/me');
+  // Any endpoint under /auth/ is part of the session flow: a 401 there is
+  // expected and handled by the view/guard, never a "dead session reload".
+  const isSessionFlow = url.includes('/auth/');
 
   if (error?.response?.status === 401) {
     performLogout();
-    if (!isSessionProbe) {
+    if (!isSessionFlow) {
       try {
         // Full reload of the current URL: drops in-memory state that assumes
         // a session. The router guard probes /auth/me on boot and redirects

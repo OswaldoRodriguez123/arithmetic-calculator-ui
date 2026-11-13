@@ -35,7 +35,19 @@ describe('handleApiError', () => {
     expect(useAppStore().state.user).toBeNull()
   })
 
-  test('401 on the /auth/me session probe clears state but does NOT reload (guard handles it)', async () => {
+  test('401 on a session-flow endpoint (/auth/*) clears state but does NOT reload (view/guard handles it)', async () => {
+    useAppStore().state = { user: { id: '1' }, isAuthenticated: true }
+
+    const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {})
+    const error = { response: { status: 401 }, config: { url: 'https://arithmetic-calculator-api.onrender.com/api/v1/auth/login' } }
+    await expect(handleApiError(error)).rejects.toBe(error)
+
+    expect(useAppStore().state.isAuthenticated).toBe(false)
+    expect(reload).not.toHaveBeenCalled()
+    reload.mockRestore()
+  })
+
+  test('401 on a session-flow endpoint (/auth/me) clears state but does NOT reload', async () => {
     useAppStore().state = { user: { id: '1' }, isAuthenticated: true }
 
     const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {})
