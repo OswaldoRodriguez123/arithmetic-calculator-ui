@@ -2,14 +2,23 @@ name: tests
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Public production API origin (also documented in README and the
+      # API's OpenAPI spec). The build refuses a plain-http API URL.
+      VITE_API_URL: https://arithmetic-calculator-api.onrender.com/
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # actions/checkout v4 (pinned to a commit SHA)
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      # actions/setup-node v4 (pinned to a commit SHA)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 18
-      - run: npm install
+          node-version: 20
+      - run: npm ci
       - run: npm run test:unit -- --run
       - run: npm run build

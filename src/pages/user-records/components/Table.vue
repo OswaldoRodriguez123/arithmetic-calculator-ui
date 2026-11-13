@@ -60,11 +60,6 @@ export default {
           field: 'date',
           header: 'Date'
         },
-        {
-          header: 'actions',
-          field: '<i role="button" class="fa fa-trash" title="Delete record">',
-          sortable: false,
-        }
       ],
       totalRecords: 0,
       isLoading: false,

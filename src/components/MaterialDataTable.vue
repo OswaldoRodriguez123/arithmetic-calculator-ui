@@ -20,11 +20,19 @@
         </span>
       </div>
     </template>
-    <Column v-for="header in headers.filter((header) => header?.sortable !== false)" :field="header.field" :header="header.header" :sortable="header?.sortable ?? true">
+    <Column v-for="header in headers" :key="header.field" :field="header.field" :header="header.header" :sortable="header?.sortable ?? true">
     </Column>
-    <Column field="actions">
+    <Column field="actions" header="Actions" :sortable="false">
       <template #body="slotProps">
-        <div @click="() => onClickAction(slotProps.data.id)" v-html="headers.find(header => header?.sortable === false)?.field"></div>
+        <button
+          type="button"
+          class="btn btn-link text-danger p-0 m-0 border-0"
+          title="Delete record"
+          aria-label="Delete record"
+          @click="() => onClickAction(slotProps.data.id)"
+        >
+          <i class="fa fa-trash" role="img" aria-hidden="true"></i>
+        </button>
       </template>
     </Column>
   </DataTable>
