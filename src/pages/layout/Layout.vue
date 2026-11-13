@@ -16,41 +16,11 @@
 
 import Navbar from "./Navbar.vue";
 
-// services
-import { getUserDataStorage } from "@/services/core/local-storage/local-storage.service";
-
-// store
-import { useAppStore } from "@/stores";
-
 defineProps({
   title: {
     type: String,
     required: true,
   },
 });
-</script>
-
-<script>
-
-export default {
-  data() {
-    return {
-      store: useAppStore()
-    }
-  },
-  created() {
-    const user = getUserDataStorage();
-    const isAuthenticated = user ? true : false;
-    this.store.state = {
-      isAuthenticated,
-      user,
-    }
-  },
-  mounted() {
-    if (!this.store.state.isAuthenticated) {
-      this.$router.push({ name: "sign-in" });
-    }
-  }
-}
 
 </script>

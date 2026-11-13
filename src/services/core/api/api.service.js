@@ -1,5 +1,4 @@
 import axios from "axios";
-import localStorageService from "../local-storage";
 import config from "~/config";
 import { performLogout } from "../../auth/logout";
 
@@ -7,17 +6,26 @@ const versionApi = 'v1';
 
 /**
  * Axios response error handler. On 401 the session is dead: clear it and
- * force a full-page reload to sign-in (the JWT cannot be renewed from here).
+ * force a full-page reload — EXCEPT the router guard's /auth/me probe,
+ * whose 401 means "no session" and is handled by the guard redirecting to
+ * sign-in (reloading there would loop forever).
  * The error is always re-thrown so callers never resolve `undefined`.
  */
 export function handleApiError(error) {
+  const url = String(error?.config?.url ?? '');
+  const isSessionProbe = url.includes('/auth/me');
+
   if (error?.response?.status === 401) {
     performLogout();
-    try {
-      // Full reload: drops any in-memory state that still assumes a session.
-      window.location.assign('/sign-in');
-    } catch {
-      // Non-browser environment (tests, SSR): nothing to reload.
+    if (!isSessionProbe) {
+      try {
+        // Full reload of the current URL: drops in-memory state that assumes
+        // a session. The router guard probes /auth/me on boot and redirects
+        // to sign-in, so this works regardless of the deploy base path.
+        window.location.reload();
+      } catch {
+        // Non-browser environment (tests, SSR): nothing to reload.
+      }
     }
   }
   return Promise.reject(error);
@@ -36,12 +44,9 @@ class ApiService {
   init() {
     axios.defaults.baseURL = `${config.VITE_API_URL}api/${versionApi}`;
 
-    const token = localStorageService.getToken();
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common["Authorization"];
-    }
+    // The session JWT travels as an httpOnly cookie set by the API at login.
+    // JavaScript never sees the token; requests just carry the cookie.
+    axios.defaults.withCredentials = true;
 
     // Register the response interceptor only once per page load, no matter
     // how many services are constructed.

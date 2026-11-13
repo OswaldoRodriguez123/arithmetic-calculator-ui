@@ -12,13 +12,9 @@ export const getUserDataStorage = () => {
   }
 }
 
+// The stored entry is only a non-sensitive display profile
+// ({ id, name, username }) kept for instant paint of the navbar/dashboard.
+// The session itself lives in the httpOnly cookie, which JavaScript cannot read.
 export const saveUserDataStorage = (data) => {
   localStorage.setItem('user', JSON.stringify(data))
 }
-
-export const getToken = () => {
-  const user = getUserDataStorage();
-  return user?.token
-};
-
-export default { getToken };
