@@ -1,3 +1,1 @@
-import localStorageService from "./local-storage.service";
-
-export default localStorageService;
+export { getUserDataStorage, saveUserDataStorage } from "./local-storage.service";

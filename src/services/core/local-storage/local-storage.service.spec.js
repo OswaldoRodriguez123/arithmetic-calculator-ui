@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach } from 'vitest'
-import { getUserDataStorage, getToken, saveUserDataStorage } from './local-storage.service'
+import { getUserDataStorage, saveUserDataStorage } from './local-storage.service'
 
 describe('getUserDataStorage', () => {
   beforeEach(() => {
@@ -10,9 +10,9 @@ describe('getUserDataStorage', () => {
     expect(getUserDataStorage()).toBeNull()
   })
 
-  test('returns the parsed user when storage is valid', () => {
-    localStorage.setItem('user', JSON.stringify({ id: '1', token: 'tok' }))
-    expect(getUserDataStorage()).toEqual({ id: '1', token: 'tok' })
+  test('returns the parsed profile when storage is valid', () => {
+    localStorage.setItem('user', JSON.stringify({ id: '1', name: 'User 1' }))
+    expect(getUserDataStorage()).toEqual({ id: '1', name: 'User 1' })
   })
 
   test('returns null instead of throwing when storage is corrupted', () => {
@@ -25,11 +25,6 @@ describe('getUserDataStorage', () => {
     localStorage.setItem('user', '{not valid json')
     getUserDataStorage()
     expect(localStorage.getItem('user')).toBeNull()
-  })
-
-  test('getToken returns undefined when storage is corrupted', () => {
-    localStorage.setItem('user', '{{{')
-    expect(getToken()).toBeUndefined()
   })
 
   test('saveUserDataStorage(null) then getUserDataStorage returns null', () => {

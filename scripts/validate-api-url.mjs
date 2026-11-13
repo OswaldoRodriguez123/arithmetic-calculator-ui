@@ -2,8 +2,8 @@
  * Build-time guard for VITE_API_URL (critic GAP-1).
  *
  * The SPA bakes the API base URL into the bundle at build time. Without a
- * check, a plain-http URL to a remote host would put every JWT sent as a
- * bearer token on the wire unencrypted. This fails the build unless the
+ * check, an http URL to a remote host would put every credentialed request
+ * (the session cookie) on the wire unencrypted. This fails the build unless the
  * URL is https:, or an explicit local loopback host (http is accepted for
  * local development only).
  */

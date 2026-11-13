@@ -4,19 +4,22 @@
 
 Vue 3 single-page app for the
 [arithmetic calculator API](https://github.com/OswaldoRodriguez123/arithmetic-calculator-api).
-Users sign in with a JWT, run operations from the API catalog and review the
-records each operation creates.
+Users sign in, run operations from the API catalog and review the
+records each operation creates. The session JWT travels as an httpOnly
+cookie — it is never exposed to JavaScript.
 
 ## Features
 
-- **Sign in** with username and password; the JWT is stored locally and sent as
-  a bearer token on every request.
+- **Sign in** with username and password; on success the API sets an
+  httpOnly session cookie (`SameSite=Lax` in development, `SameSite=None;
+  Secure` in production). JavaScript never sees the token.
 - **Dashboard** with the available operations and the user's current balance.
 - **New operation**: pick an operation, enter the numbers it needs and submit
   it. The API charges the operation cost and stores the result.
 - **Records**: paginated table with sorting, search and soft delete.
-- **Session handling**: a `401` response logs the user out, clears the stored
-  token and reloads to the sign-in page.
+- **Session handling**: the router guard probes `GET /auth/me` before
+  protected routes and hydrates the display profile; a `401` anywhere logs
+  the user out, clears the stored profile and reloads to the sign-in page.
 
 ## Stack
 
@@ -73,16 +76,20 @@ What the hardening pass (run-1 security audit) fixed:
   `frame-ancestors 'none'` **cannot be expressed in a meta tag** — the static
   host serving this app must send it (and ideally `Strict-Transport-Security`,
   `Referrer-Policy`) as HTTP headers.
-- **Token storage residual risk.** The JWT lives in `localStorage['user']`,
-  readable by any same-origin script. That is inherent to this design; the
-  long-term fix is an httpOnly-cookie session on the API, which the API does
-  not offer yet. Accepted risk, documented here.
-- **`401` anywhere** clears the stored token and store state, deletes the
-  shared `axios.defaults` Authorization header, and reloads to `/sign-in`.
+- **Token storage (resolved).** The JWT lives in an httpOnly cookie set by
+  the API at login; `localStorage['user']` only holds a non-sensitive
+  display profile (`id`, `name`, `username`) for instant paint. No script
+  can read the session cookie, so the XSS-exfiltration path is closed.
+  Deploy requirement: the API must run `NODE_ENV=production` with
+  `CORS_ORIGIN=https://oswaldorodriguez123.github.io` (the API refuses to
+  boot in production without it) and serve the UI over HTTPS.
+- **`401` anywhere** clears the stored profile and store state and reloads
+  to `/sign-in`. The API's `401` is the actual enforcement point.
 - The single `v-html` in the tree (user-records actions cell) was replaced by
   a static, accessible button. `grep -r v-html src` returns nothing.
-- **Router guard** (`beforeEach`) redirects unauthenticated users to sign-in;
-  the API remains the actual enforcement point (401).
+- **Router guard** (`beforeEach`) probes `GET /auth/me` when the page has no
+  verified session yet, hydrates Pinia + the display profile, and redirects
+  to sign-in on failure. The API remains the actual enforcement point (401).
 
 ## Scripts
 
@@ -120,17 +127,19 @@ npm run test:unit -- --run
 
 Vitest covers the sign-in form, the new-operation form, the records table,
 `MaterialDataTable` (no HTML injection, accessible actions button), the
-`401`/logout flow, `getUserDataStorage`, the router auth guard and the
-`validate-api-url` build guard. 31 tests across 9 files.
+`401`/logout flow (including the `/auth/me` probe exemption from the hard
+reload), `getUserDataStorage`, the router auth guard (session probe,
+redirects and hydration) and the `validate-api-url` build guard.
+37 tests across 9 files.
 
 ## Remaining work / not fixed here
 
 - **14 known vulnerabilities** remain in `npm audit` — all of them require
   breaking upgrades (Vue 3.2 → newer, Vite 2.9 → 5+, Vitest 0.32 → newer,
   `happy-dom`). They need a dedicated upgrade branch, not an audit fix.
-- **JWT in `localStorage`** is the remaining token-storage XSS risk; the
-  proper fix (httpOnly cookie session on the API) is a product change on the
-  API repo.
+- **Cookie session co-versioning.** The SPA and the API must be deployed
+  together: older APIs without `/auth/me` cannot serve the router guard,
+  and this UI does not send `Authorization` headers.
 - **`frame-ancestors`, HSTS, `Referrer-Policy`** must be sent as HTTP headers
   by the static host (GitHub Pages / fork's host); the CSP `<meta>` tag cannot
   express `frame-ancestors`.

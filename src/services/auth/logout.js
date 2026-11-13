@@ -1,11 +1,12 @@
-import axios from "axios";
 import { useAppStore } from "@/stores";
 import { saveUserDataStorage } from "../core/local-storage/local-storage.service";
 
 /**
- * Shared logout cleanup: store, localStorage and axios defaults.
- * Lives in its own module so both AuthService.logout() and the axios 401
- * response interceptor can use it without a circular dependency.
+ * Shared session cleanup: store and the (non-sensitive) display profile in
+ * localStorage. The httpOnly cookie is cleared by the API (logout endpoint);
+ * this is the client-side half, used by manual logout and by the axios 401
+ * response interceptor. Lives in its own module so the interceptor never
+ * imports AuthService (breaks the api.service <-> auth.service cycle).
  */
 export function performLogout() {
   try {
@@ -19,5 +20,4 @@ export function performLogout() {
   }
 
   saveUserDataStorage(null);
-  delete axios.defaults.headers.common["Authorization"];
 }
