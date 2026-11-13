@@ -132,7 +132,9 @@ export default {
         }
       } catch (e) {
         console.error(e.message);
-        this.errorMessage = 'Something went wrong, please try again';
+        this.errorMessage = e?.response?.status === 401
+          ? 'Username or password is incorrect'
+          : 'Something went wrong, please try again';
         this.$refs["toast"].displayToast()
       } finally {
         this.isLoading = false;
