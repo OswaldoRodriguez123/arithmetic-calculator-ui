@@ -22,11 +22,6 @@ export default defineConfig(({ command, mode }) => {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
         "~": fileURLToPath(new URL("./", import.meta.url)),
       },
-      esbuild: {
-        jsxFactory: 'h',
-        jsxFragment: 'Fragment',
-        jsxInject: `import { h, Fragment } from 'vue'`
-      }
     },
   };
 });
